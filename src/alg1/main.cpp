@@ -7,6 +7,9 @@ using namespace std;
 #define MAX_NODES 16384
 #define MAX_EDGES 16777216
 
+// TODO: IMPLEMENTACIÓN DE VERDAD DE LAS LISTAS DE ADYACENCIA
+// https://www.softwaretestinghelp.com/wp-content/qa/uploads/2019/08/7.undirected-graph-and-its-adjacency-list.png
+
 // SOURCE: https://www.geeksforgeeks.org/dijkstras-shortest-path-algorithm-greedy-algo-7/
 int minDistance(int dist[], bool sptSet[], int V) {
  
@@ -76,7 +79,11 @@ void dijkstra(int ** graph, int src, int V) {
     }
  
     // print the constructed distance array
-    printSolution(dist, V);
+    //printSolution(dist, V);
+    
+    // no need to return anything, we only care about the time it takes to run
+
+    cout << "Finished for " << V << " nodes, trust me :3" << endl;
 }
 
 void run(int V, int rand_range) {
@@ -102,14 +109,14 @@ void run(int V, int rand_range) {
     }
  
     // print
-    cout << "Graph:" << endl;
-    for(int node = 0; node < V; node++){
-        for(int edge = 0; edge < V; edge++){
-            cout << graph[node][edge] << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
+    // cout << "Graph:" << endl;
+    // for(int node = 0; node < V; node++){
+    //     for(int edge = 0; edge < V; edge++){
+    //         cout << graph[node][edge] << " ";
+    //     }
+    //     cout << endl;
+    // }
+    // cout << endl;
 
     
     // Function call
@@ -125,7 +132,9 @@ void run(int V, int rand_range) {
 int main(){
     srand(time(NULL));
 
-    run(5, 12);
+    int max_nodes = MAX_NODES;
+
+    run(16384, 12);
  
     return 0;
 }
