@@ -1,4 +1,6 @@
  #include "heap.hpp"
+#include "graph_2.hpp"
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +10,7 @@
 
 using namespace std;
 
+//------------- ACÁ SE HIZO UNA ESTRUCTURA PARA PODER RETORNAR EL PAR PEDIDO ------------------
 // A structure to store a pair of int arrays of the same size
 struct intArrPair {
     int* first;
@@ -30,128 +33,25 @@ void destroyIntArrPair(struct intArrPair pair) {
     free(pair.second);
 }
 
-// A structure to represent a
-// node in adjacency list
-struct AdjListNode {
-    int dest;
-    int weight;
-    struct AdjListNode* next;
-};
- 
-// A structure to represent
-// an adjacency list
-struct AdjList {
-     
-   // Pointer to head node of list
-   struct AdjListNode *head;
-};
- 
-// A structure to represent a graph.
-// A graph is an array of adjacency lists.
-// Size of array will be V (number of
-// vertices in graph)
-struct Graph {
-    int V;
-    struct AdjList* array;
-};
- 
-// A utility function to create
-// a new adjacency list node
-struct AdjListNode* newAdjListNode(
-                   int dest, int weight) {
-    struct AdjListNode* newNode =
-            (struct AdjListNode*)
-      malloc(sizeof(struct AdjListNode));
-    newNode->dest = dest;
-    newNode->weight = weight;
-    newNode->next = NULL;
-    return newNode;
-}
 
-// Utility function to destroy an adjacency list node
-void freeAdjListNode(struct AdjListNode* node) {
-    free(node);
-}
- 
-// A utility function that creates
-// a graph of V vertices
-struct Graph* createGraph(int V) {
-    struct Graph* graph = (struct Graph*)
-            malloc(sizeof(struct Graph));
-    graph->V = V;
- 
-    // Create an array of adjacency lists. 
-    // Size of array will be V
-    graph->array = (struct AdjList*)
-       malloc(V * sizeof(struct AdjList));
- 
-    // Initialize each adjacency list
-    // as empty by making head as NULL
-    for (int i = 0; i < V; ++i)
-        graph->array[i].head = NULL;
- 
-    return graph;
-}
-
-// A utility function that destoys a graph of V vertices
-void destroyGraph(struct Graph* graph) {
-    // free the memory allocated by addEgde
-    for (int i = 0; i < graph->V; ++i) {
-        struct AdjListNode* node = graph->array[i].head;
-        while (node != NULL) {
-            struct AdjListNode* next = node->next;
-            freeAdjListNode(node);
-            node = next;
-        }
-    }
-    // free the memory allocated by createGraph
-    free(graph->array);
-    free(graph);
-}
- 
-// Adds an edge to an undirected graph
-void addEdge(struct Graph* graph, int src,
-                   int dest, int weight) {
-    // Add an edge from src to dest. 
-    // A new node is added to the adjacency
-    // list of src.  The node is
-    // added at the beginning
-    struct AdjListNode* newNode =
-            newAdjListNode(dest, weight);
-    newNode->next = graph->array[src].head;
-    graph->array[src].head = newNode;
- 
-    // Since graph is undirected,
-    // add an edge from dest to src also
-    newNode = newAdjListNode(src, weight);
-    newNode->next = graph->array[dest].head;
-    graph->array[dest].head = newNode;
-}
-
-
-
-
-
+//------------- ALGORIGMO DE DIJKSTRA USANDO UN HEAP ------------------
 
 struct intArrPair dijkstra_heap(struct Graph* graph, int src ) {
-    int V = graph->V; // # of vertices in graph
-    // index = vertex
-    int dist[V]; // dist values for each vertex
-    int prev[V]; // previous vertex in optimal path
+    //Recuperamos el numero de vertices y se definen los arreglos dist y prev.
+    int V = graph->V; 
+    int dist[V];  
+    int prev[V];  
 
     // Se crea el Heap con espacio igual al numero de
     struct Heap_* heap = nuevo_heap_(V);
-
-
+    
+    //Se llena dist con infinito y prev con idefinido.
     for (int i = 0; i < V; i++) {
         dist[i] = INT_MAX;
         prev[i] = -1;
-    }
-
-    for (int v = 0; v < V; ++v) {
-        dist[v] = INT_MAX;
-        heap->array[v] = nuevo_Heap_nodo(v,dist[v]);
-        heap->pos[v] = v;
+        //Se llena el heap con un elemento por nodo, con prioridad igual a dist.
+        heap->array[i] = nuevo_Heap_nodo(i,dist[i]);
+        heap->pos[i] = i;
     }
 
     // Se hace que dist del vértice src sea 0 así podemos extraerlo.
@@ -160,117 +60,106 @@ struct intArrPair dijkstra_heap(struct Graph* graph, int src ) {
     dist[src] = 0;
     decreaseKey(heap, src, dist[src]);
 
+    //Seteamos el tamaño del heap.
     heap->size = V;
+
+
     //Mientras el heap no esté vacío.
-    cout << "while\n";
+
     while (!isEmpty(heap)) {
         //extracción del vértice v con menor distancia a la raíz (que ahora sólo requiere un ExtractMin)
         struct Heap_nodo * min =  extract_Min(heap);
-        cout << "min is: v =" << min->v << " y dist = " << min->dist;
+        //Recuperamos el índice del vértice.
         int u = min->v;
         // lo añadimos al arreglo de previos
-        prev[u] = u;
+        prev[u] = 1;
 
         //Actualizamos la distancia mínima a cada vecino de v que lo requiera
-        struct AdjListNode* pCrawl = graph->array[u].head;
-
-       while (pCrawl != NULL) {
+        struct Node_list* pCrawl = graph->array[u].head;
+        //Recorremos los vecinos.
+        while (pCrawl != NULL) {
             //Obtenemos 
             int v = pCrawl->dest;
-            // If shortest distance to v is
-            // not finalized yet, and distance to v
-            // through u is less than its
-            // previously calculated distance
-            //Si la menor distancia a v 
+            //
             if (isInHeap(heap, v)) {
-                if (dist[u] != INT_MAX && pCrawl->weight + dist[u] < dist[v]) {
-                    dist[v] = dist[u] + pCrawl->weight; 
-                    // update distance
-                    // value in min heap also
-                    decreaseKey(heap, v, dist[v]);
+                if (dist[u] != INT_MAX) {
+                    if ( pCrawl->weight + dist[u] < dist[v]) {
+                        dist[v] = dist[u] + pCrawl->weight; 
+                        // Actualizamos dis en el heap usando decreaseKey.
+                        decreaseKey(heap, v, dist[v]);
+                    }
                 }
             }
             pCrawl = pCrawl->next;
        }
     }
     // print the calculated shortest distances
-    printArr(dist, V);
+    //printArr(dist, V);
+
+    //Se hacen los arreglos para poder retornar el par.
     struct intArrPair ret = createIntArrPair(V);
+    //Se recorren los vértices.
     for (int i = 0; i < V; i++) {
         ret.first[i] = dist[i];
         ret.second[i] = prev[i];
     }
     return ret;
-
 }
 
-
-
-
-void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
-    int V = graph->V;
-    int EperV = E / V; // # of edges per vertex
-    // the tricky part is making sure that:
-    // 1. there are no duplicate edges. e.g: (0, 1) and (1, 0)
-    // 2. there are no self loops. e.g: (0, 0)
-    // 3. every vertex has at least 2 edges
-    // in fact, for simplicity, we will make sure that every vertex has exactly EperV edges.
-    // the weights will still be random. Note that no edge has a weight of 0.
-    // we will use a 2D array to keep track of which edges have been added.
-    // 1 = edge exists, 0 = edge does not exist
-
-    // so we do that. allocate the memory and fill in with zeros
-    int ** edges = (int **)malloc(V * sizeof(int *));
-    for (int i = 0; i < V; i++) {
-        edges[i] = (int *)malloc(V * sizeof(int));
-        for (int j = 0; j < V; j++) {
-            edges[i][j] = 0;
-        }
-    }
-    // add edges
-    for (int i = 0; i < V; i++) {
-        int edgesAdded = 0;
-        while (edgesAdded < EperV) {
-            int dest = rand() % V;
-            if (edges[i][dest] == 0 && i != dest) {
-                int weight = rand() % wtRange + 1; // all edges have a wt > 0
-                addEdge(graph, i, dest, weight);
-                edges[i][dest] = 1;
-                edgesAdded++;
-            }
-        }
-    }
-    // free edges
-    for (int i = 0; i < V; i++) {
-        free(edges[i]);
-    }
-    free(edges);
-}
-
-
-
-
+// --------- EN EL MAIN SE DESARROLLA EL TESTEO PARA ESTE ALGORITMO -------------
 int main(){
-    int V = 10;
-    int E=15;
-    double avg = 0;
-    int wtRange = 20;
-    struct Graph * graph;
-    graph = createGraph(V);
-    fillInGraphRandomly(graph, E, wtRange);
+    srand(time(NULL));
+    int iterations = 15;
+    int V = pow(2, 14);
+    int E;
+    int wtRange = 254;
     int src = 0;
-    // timer starting
-    auto start = chrono::steady_clock::now();
-    // dijkstra running
-    struct intArrPair res = dijkstra_heap(graph, src);
-    // timer stopping
-    auto end = chrono::steady_clock::now();
-    // timer results getting
-    double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
+    struct Graph * graph;
+    cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
+    cout << "With 15 iterations per amount of edges (taking the adverage for each):" << endl;
+    // NOTE: 50 iterations was just way too much. Each algorithm took HORS to complete.
+    cout << endl;
 
-    destroyGraph(graph);
-    destroyIntArrPair(res);
-    cout << ".";
+    for(int i = 16; i <= 24; i++){
+        E = pow(2, i);
+        cout << "for E = 2^" << i << " = " << E;
+        double avg = 0;
+        double std = 0;
+        double totals[iterations];
+        for(int j = 0; j < iterations; j++){
+            // graph making
+            graph = createGraph(V);
+            // graph filling
+            fillInGraphRandomly(graph, E, wtRange);
+            // timer starting
+            auto start = chrono::steady_clock::now();
+            // dijkstra running
+            struct intArrPair res = dijkstra_heap(graph, src);
+            // timer stopping
+            auto end = chrono::steady_clock::now();
+            // timer results getting
+            double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
+            // results summing
+            avg += total;
+            totals[j] = total;
+            // graph and results freeing
+            destroyGraph(graph);
+            destroyIntArrPair(res);
+            cout << ".";
+        }
+        cout << endl;
+        // average taking
+        avg /= iterations;
+        // standard deviation taking
+        for(int j = 0; j < iterations; j++){
+            std += pow(totals[j] - avg, 2);
+        }
+        std /= iterations;
+        std = sqrt(std);
+        // average printing
+        cout << "Average time taken: " << avg << " +- " << std << " microseconds" << endl;
+        cout << endl;
+    }
 
     return 0;
 }
