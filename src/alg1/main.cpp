@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <cmath>
+#include <chrono>
 
 using namespace std;
 
@@ -237,13 +238,18 @@ int main(){
     fillInGraphRandomly(graph, E, wtRange);
 
     cout << "Running Dijkstra..." << endl;
+    auto start = chrono::steady_clock::now();
     struct intArrPair res = dijkstra(graph, 0);
+    auto end = chrono::steady_clock::now();
+
+    double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
+    cout << "Dijkstra took " << duracion << " microseconds" << endl;
 
     // print results
     // for (int i = 0; i < V; i++) {
     //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
     // }
-    
+
     cout << "Done. Freeing memory..." << endl;
     destroyGraph(graph);
     destroyIntArrPair(res);
@@ -255,6 +261,7 @@ int main(){
 
 // no go zone:
 
+// main ver. 1
     // //lets test it
     // int V = 9;
     // struct Graph* graph = createGraph(V);
@@ -284,5 +291,38 @@ int main(){
     // // free memory
     // destroyIntArrPair(res);
     // destroyGraph(graph);
+
+    // return 0;
+
+// main ver. 2
+    // srand(time(NULL));
+    // int V = pow(2, 14);
+    // int E = pow(2, 24);
+    // int wtRange = 254;
+
+    // cout << "Generating graph with " << V << " vertices..." << endl;
+    // struct Graph* graph = createGraph(V);
+
+    // cout << "Filling in graph with " << E << " edges..." << endl;
+    // fillInGraphRandomly(graph, E, wtRange);
+
+    // cout << "Running Dijkstra..." << endl;
+    // auto start = chrono::steady_clock::now();
+    // struct intArrPair res = dijkstra(graph, 0);
+    // auto end = chrono::steady_clock::now();
+
+    // double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
+    // cout << "Dijkstra took " << duracion << " microseconds" << endl;
+
+    // // print results
+    // // for (int i = 0; i < V; i++) {
+    // //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
+    // // }
+
+    // cout << "Done. Freeing memory..." << endl;
+    // destroyGraph(graph);
+    // destroyIntArrPair(res);
+
+    // cout << "That was for V = " << V << ", E = " << E << endl;
 
     // return 0;
