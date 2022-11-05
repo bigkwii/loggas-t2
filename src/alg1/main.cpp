@@ -70,6 +70,11 @@ struct AdjListNode* newAdjListNode(
     newNode->next = NULL;
     return newNode;
 }
+
+// Utility function to destroy an adjacency list node
+void freeAdjListNode(struct AdjListNode* node) {
+    free(node);
+}
  
 // A utility function that creates
 // a graph of V vertices
@@ -93,6 +98,15 @@ struct Graph* createGraph(int V) {
 
 // A utility function that destoys a graph of V vertices
 void destroyGraph(struct Graph* graph) {
+    // free the memory allocated by addEgde
+    for (int i = 0; i < graph->V; ++i) {
+        struct AdjListNode* node = graph->array[i].head;
+        while (node != NULL) {
+            struct AdjListNode* next = node->next;
+            freeAdjListNode(node);
+            node = next;
+        }
+    }
     // free the memory allocated by createGraph
     free(graph->array);
     free(graph);
@@ -228,101 +242,116 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
 int main(){
     srand(time(NULL));
     int V = pow(2, 14);
-    int E = pow(2, 24);
+    int E;
     int wtRange = 254;
+    int src = 0;
+    struct Graph * graph;
+    cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
+    cout << "With 50 iterations per amount of edges (taking the adverage for each):" << endl;
+    cout << endl;
 
-    cout << "Generating graph with " << V << " vertices..." << endl;
-    struct Graph* graph = createGraph(V);
-
-    cout << "Filling in graph with " << E << " edges..." << endl;
-    fillInGraphRandomly(graph, E, wtRange);
-
-    cout << "Running Dijkstra..." << endl;
-    auto start = chrono::steady_clock::now();
-    struct intArrPair res = dijkstra(graph, 0);
-    auto end = chrono::steady_clock::now();
-
-    double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
-    cout << "Dijkstra took " << duracion << " microseconds" << endl;
-
-    // print results
-    // for (int i = 0; i < V; i++) {
-    //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
-    // }
-
-    cout << "Done. Freeing memory..." << endl;
-    destroyGraph(graph);
-    destroyIntArrPair(res);
-
-    cout << "That was for V = " << V << ", E = " << E << endl;
+    for(int i = 16; i <= 24; i++){
+        E = pow(2, i);
+        cout << "for E = 2^" << i << " = " << E;
+        double avg = 0;
+        for(int j = 0; j < 50; j++){
+            // graph making
+            graph = createGraph(V);
+            // graph filling
+            fillInGraphRandomly(graph, E, wtRange);
+            // timer starting
+            auto start = chrono::steady_clock::now();
+            // dijkstra running
+            dijkstra(graph, src);
+            // timer stopping
+            auto end = chrono::steady_clock::now();
+            // timer results getting
+            double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
+            // results summing
+            avg += total;
+            // graph freeing
+            destroyGraph(graph);
+            cout << ".";
+        }
+        cout << endl;
+        // average taking
+        avg /= 50;
+        // average printing
+        cout << "Average time taken: " << avg << " microseconds" << endl;
+        cout << endl;
+    }
 
     return 0;
 }
 
-// no go zone:
+// old versions of main:
 
 // main ver. 1
-    // //lets test it
-    // int V = 9;
-    // struct Graph* graph = createGraph(V);
-    // addEdge(graph, 0, 1, 4);
-    // addEdge(graph, 0, 7, 8);
-    // addEdge(graph, 1, 2, 8);
-    // addEdge(graph, 1, 7, 11);
-    // addEdge(graph, 2, 3, 7);
-    // addEdge(graph, 2, 8, 2);
-    // addEdge(graph, 2, 5, 4);
-    // addEdge(graph, 3, 4, 9);
-    // addEdge(graph, 3, 5, 14);
-    // addEdge(graph, 4, 5, 10);
-    // addEdge(graph, 5, 6, 2);
-    // addEdge(graph, 6, 7, 1);
-    // addEdge(graph, 6, 8, 6);
-    // addEdge(graph, 7, 8, 7);
+// int main(){
+//     //lets test it
+//     int V = 9;
+//     struct Graph* graph = createGraph(V);
+//     addEdge(graph, 0, 1, 4);
+//     addEdge(graph, 0, 7, 8);
+//     addEdge(graph, 1, 2, 8);
+//     addEdge(graph, 1, 7, 11);
+//     addEdge(graph, 2, 3, 7);
+//     addEdge(graph, 2, 8, 2);
+//     addEdge(graph, 2, 5, 4);
+//     addEdge(graph, 3, 4, 9);
+//     addEdge(graph, 3, 5, 14);
+//     addEdge(graph, 4, 5, 10);
+//     addEdge(graph, 5, 6, 2);
+//     addEdge(graph, 6, 7, 1);
+//     addEdge(graph, 6, 8, 6);
+//     addEdge(graph, 7, 8, 7);
  
-    // // allocate memory for results and run dijkstra
-    // struct intArrPair res = dijkstra(graph, 0);
+//     // allocate memory for results and run dijkstra
+//     struct intArrPair res = dijkstra(graph, 0);
 
-    // // print results
-    // for (int i = 0; i < res.size; i++) {
-    //     cout << "Vertex " << i << " has distance " << res.first[i] << " and previous vertex " << res.second[i] << endl;
-    // }
+//     // print results
+//     for (int i = 0; i < res.size; i++) {
+//         cout << "Vertex " << i << " has distance " << res.first[i] << " and previous vertex " << res.second[i] << endl;
+//     }
     
-    // // free memory
-    // destroyIntArrPair(res);
-    // destroyGraph(graph);
+//     // free memory
+//     destroyIntArrPair(res);
+//     destroyGraph(graph);
 
-    // return 0;
+//     return 0;
+// }
 
 // main ver. 2
-    // srand(time(NULL));
-    // int V = pow(2, 14);
-    // int E = pow(2, 24);
-    // int wtRange = 254;
+// int main(){
+//     srand(time(NULL));
+//     int V = pow(2, 14);
+//     int E = pow(2, 24);
+//     int wtRange = 254;
 
-    // cout << "Generating graph with " << V << " vertices..." << endl;
-    // struct Graph* graph = createGraph(V);
+//     cout << "Generating graph with " << V << " vertices..." << endl;
+//     struct Graph* graph = createGraph(V);
 
-    // cout << "Filling in graph with " << E << " edges..." << endl;
-    // fillInGraphRandomly(graph, E, wtRange);
+//     cout << "Filling in graph with " << E << " edges..." << endl;
+//     fillInGraphRandomly(graph, E, wtRange);
 
-    // cout << "Running Dijkstra..." << endl;
-    // auto start = chrono::steady_clock::now();
-    // struct intArrPair res = dijkstra(graph, 0);
-    // auto end = chrono::steady_clock::now();
+//     cout << "Running Dijkstra..." << endl;
+//     auto start = chrono::steady_clock::now();
+//     struct intArrPair res = dijkstra(graph, 0);
+//     auto end = chrono::steady_clock::now();
 
-    // double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
-    // cout << "Dijkstra took " << duracion << " microseconds" << endl;
+//     double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
+//     cout << "Dijkstra took " << duracion << " microseconds" << endl;
 
-    // // print results
-    // // for (int i = 0; i < V; i++) {
-    // //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
-    // // }
+//     // print results
+//     // for (int i = 0; i < V; i++) {
+//     //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
+//     // }
 
-    // cout << "Done. Freeing memory..." << endl;
-    // destroyGraph(graph);
-    // destroyIntArrPair(res);
+//     cout << "Done. Freeing memory..." << endl;
+//     destroyGraph(graph);
+//     destroyIntArrPair(res);
 
-    // cout << "That was for V = " << V << ", E = " << E << endl;
+//     cout << "That was for V = " << V << ", E = " << E << endl;
 
-    // return 0;
+//     return 0;
+// }
