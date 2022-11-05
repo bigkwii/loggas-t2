@@ -239,17 +239,30 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
     free(edges);
 }
 
+void shuffleEdgeWeights(struct Graph* graph) {
+    // this won't change the structure of the graph
+    // but it will assign all new random weights to all edges
+    int V = graph->V;
+    for (int i = 0; i < V; i++) {
+        struct AdjListNode* pCrawl = graph->array[i].head;
+        while (pCrawl != NULL) {
+            int weight = rand() % 100 + 1; // all edges have a wt > 0
+            pCrawl->weight = weight;
+            pCrawl = pCrawl->next;
+        }
+    }
+}
+
 int main(){
     srand(time(NULL));
-    int iterations = 15;
+    int iterations = 50;
     int V = pow(2, 14);
     int E;
     int wtRange = 254;
     int src = 0;
     struct Graph * graph;
     cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
-    cout << "With 15 iterations per amount of edges (taking the adverage for each):" << endl;
-    // NOTE: 50 iterations was just way too much. Each algorithm took HORS to complete.
+    cout << "With " << iterations << " iterations per amount of edges (taking the adverage for each):" << endl;
     cout << endl;
 
     for(int i = 16; i <= 24; i++){
@@ -258,11 +271,11 @@ int main(){
         double avg = 0;
         double std = 0;
         double totals[iterations];
+        // graph making
+        graph = createGraph(V);
+        // graph filling
+        fillInGraphRandomly(graph, E, wtRange);
         for(int j = 0; j < iterations; j++){
-            // graph making
-            graph = createGraph(V);
-            // graph filling
-            fillInGraphRandomly(graph, E, wtRange);
             // timer starting
             auto start = chrono::steady_clock::now();
             // dijkstra running
@@ -274,12 +287,15 @@ int main(){
             // results summing
             avg += total;
             totals[j] = total;
-            // graph and results freeing
-            destroyGraph(graph);
+            // results freeing
             destroyIntArrPair(res);
+            // graph shuffling
+            shuffleEdgeWeights(graph); // instead of destroying and recreating the graph, or we'll be here for days
             cout << ".";
         }
         cout << endl;
+        // graph freeing
+        destroyGraph(graph);
         // average taking
         avg /= iterations;
         // standard deviation taking
