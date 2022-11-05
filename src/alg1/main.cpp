@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <cmath>
+#include <chrono>
 
 using namespace std;
 
@@ -91,14 +93,7 @@ struct Graph* createGraph(int V) {
 
 // A utility function that destoys a graph of V vertices
 void destroyGraph(struct Graph* graph) {
-    for (int i = 0; i < graph->V; ++i) {
-        struct AdjListNode* node = graph->array[i].head;
-        while (node != NULL) {
-            struct AdjListNode* next = node->next;
-            free(node);
-            node = next;
-        }
-    }
+    // free the memory allocated by createGraph
     free(graph->array);
     free(graph);
 }
@@ -190,36 +185,144 @@ struct intArrPair dijkstra(struct Graph* graph, int src) {
 
 }
 
+void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
+    int V = graph->V;
+    int EperV = E / V; // # of edges per vertex
+    // the tricky part is making sure that:
+    // 1. there are no duplicate edges. e.g: (0, 1) and (1, 0)
+    // 2. there are no self loops. e.g: (0, 0)
+    // 3. every vertex has at least 2 edges
+    // in fact, for simplicity, we will make sure that every vertex has exactly EperV edges.
+    // the weights will still be random. Note that no edge has a weight of 0.
+    // we will use a 2D array to keep track of which edges have been added.
+    // 1 = edge exists, 0 = edge does not exist
+
+    // so we do that. allocate the memory and fill in with zeros
+    int ** edges = (int **)malloc(V * sizeof(int *));
+    for (int i = 0; i < V; i++) {
+        edges[i] = (int *)malloc(V * sizeof(int));
+        for (int j = 0; j < V; j++) {
+            edges[i][j] = 0;
+        }
+    }
+    // add edges
+    for (int i = 0; i < V; i++) {
+        int edgesAdded = 0;
+        while (edgesAdded < EperV) {
+            int dest = rand() % V;
+            if (edges[i][dest] == 0 && i != dest) {
+                int weight = rand() % wtRange + 1; // all edges have a wt > 0
+                addEdge(graph, i, dest, weight);
+                edges[i][dest] = 1;
+                edgesAdded++;
+            }
+        }
+    }
+    // free edges
+    for (int i = 0; i < V; i++) {
+        free(edges[i]);
+    }
+    free(edges);
+}
+
 int main(){
-    //lets test it
-    int V = 9;
+    srand(time(NULL));
+    int V = pow(2, 14);
+    int E = pow(2, 24);
+    int wtRange = 254;
+
+    cout << "Generating graph with " << V << " vertices..." << endl;
     struct Graph* graph = createGraph(V);
-    addEdge(graph, 0, 1, 4);
-    addEdge(graph, 0, 7, 8);
-    addEdge(graph, 1, 2, 8);
-    addEdge(graph, 1, 7, 11);
-    addEdge(graph, 2, 3, 7);
-    addEdge(graph, 2, 8, 2);
-    addEdge(graph, 2, 5, 4);
-    addEdge(graph, 3, 4, 9);
-    addEdge(graph, 3, 5, 14);
-    addEdge(graph, 4, 5, 10);
-    addEdge(graph, 5, 6, 2);
-    addEdge(graph, 6, 7, 1);
-    addEdge(graph, 6, 8, 6);
-    addEdge(graph, 7, 8, 7);
- 
-    // allocate memory for results and run dijkstra
+
+    cout << "Filling in graph with " << E << " edges..." << endl;
+    fillInGraphRandomly(graph, E, wtRange);
+
+    cout << "Running Dijkstra..." << endl;
+    auto start = chrono::steady_clock::now();
     struct intArrPair res = dijkstra(graph, 0);
+    auto end = chrono::steady_clock::now();
+
+    double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
+    cout << "Dijkstra took " << duracion << " microseconds" << endl;
 
     // print results
-    for (int i = 0; i < res.size; i++) {
-        cout << "Vertex " << i << " has distance " << res.first[i] << " and previous vertex " << res.second[i] << endl;
-    }
-    
-    // free memory
-    destroyIntArrPair(res);
+    // for (int i = 0; i < V; i++) {
+    //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
+    // }
+
+    cout << "Done. Freeing memory..." << endl;
     destroyGraph(graph);
+    destroyIntArrPair(res);
+
+    cout << "That was for V = " << V << ", E = " << E << endl;
 
     return 0;
 }
+
+// no go zone:
+
+// main ver. 1
+    // //lets test it
+    // int V = 9;
+    // struct Graph* graph = createGraph(V);
+    // addEdge(graph, 0, 1, 4);
+    // addEdge(graph, 0, 7, 8);
+    // addEdge(graph, 1, 2, 8);
+    // addEdge(graph, 1, 7, 11);
+    // addEdge(graph, 2, 3, 7);
+    // addEdge(graph, 2, 8, 2);
+    // addEdge(graph, 2, 5, 4);
+    // addEdge(graph, 3, 4, 9);
+    // addEdge(graph, 3, 5, 14);
+    // addEdge(graph, 4, 5, 10);
+    // addEdge(graph, 5, 6, 2);
+    // addEdge(graph, 6, 7, 1);
+    // addEdge(graph, 6, 8, 6);
+    // addEdge(graph, 7, 8, 7);
+ 
+    // // allocate memory for results and run dijkstra
+    // struct intArrPair res = dijkstra(graph, 0);
+
+    // // print results
+    // for (int i = 0; i < res.size; i++) {
+    //     cout << "Vertex " << i << " has distance " << res.first[i] << " and previous vertex " << res.second[i] << endl;
+    // }
+    
+    // // free memory
+    // destroyIntArrPair(res);
+    // destroyGraph(graph);
+
+    // return 0;
+
+// main ver. 2
+    // srand(time(NULL));
+    // int V = pow(2, 14);
+    // int E = pow(2, 24);
+    // int wtRange = 254;
+
+    // cout << "Generating graph with " << V << " vertices..." << endl;
+    // struct Graph* graph = createGraph(V);
+
+    // cout << "Filling in graph with " << E << " edges..." << endl;
+    // fillInGraphRandomly(graph, E, wtRange);
+
+    // cout << "Running Dijkstra..." << endl;
+    // auto start = chrono::steady_clock::now();
+    // struct intArrPair res = dijkstra(graph, 0);
+    // auto end = chrono::steady_clock::now();
+
+    // double duracion = chrono::duration_cast<chrono::microseconds>(end-start).count();
+    // cout << "Dijkstra took " << duracion << " microseconds" << endl;
+
+    // // print results
+    // // for (int i = 0; i < V; i++) {
+    // //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
+    // // }
+
+    // cout << "Done. Freeing memory..." << endl;
+    // destroyGraph(graph);
+    // destroyIntArrPair(res);
+
+    // cout << "That was for V = " << V << ", E = " << E << endl;
+
+    // return 0;
