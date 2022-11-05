@@ -241,20 +241,22 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
 
 int main(){
     srand(time(NULL));
+    int iterations = 15;
     int V = pow(2, 14);
     int E;
     int wtRange = 254;
     int src = 0;
     struct Graph * graph;
     cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
-    cout << "With 50 iterations per amount of edges (taking the adverage for each):" << endl;
+    cout << "With 15 iterations per amount of edges (taking the adverage for each):" << endl;
+    // NOTE: 50 iterations was just way too much. Each algorithm took HORS to complete.
     cout << endl;
 
     for(int i = 16; i <= 24; i++){
         E = pow(2, i);
         cout << "for E = 2^" << i << " = " << E;
         double avg = 0;
-        for(int j = 0; j < 50; j++){
+        for(int j = 0; j < iterations; j++){
             // graph making
             graph = createGraph(V);
             // graph filling
@@ -276,7 +278,7 @@ int main(){
         }
         cout << endl;
         // average taking
-        avg /= 50;
+        avg /= iterations;
         // average printing
         cout << "Average time taken: " << avg << " microseconds" << endl;
         cout << endl;
