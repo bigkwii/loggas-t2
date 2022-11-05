@@ -6,9 +6,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <queue>
 
 using namespace std;
+
+// A structure to store a pair of int arrays of the same size
+struct intArrPair {
+    int* first;
+    int* second;
+    int size;
+};
+
+// Function that creates and int array pair of a given size
+struct intArrPair createIntArrPair(int size) {
+    struct intArrPair pair;
+    pair.first = (int*)malloc(size * sizeof(int));
+    pair.second = (int*)malloc(size * sizeof(int));
+    pair.size = size;
+    return pair;
+}
+
+// Function that destoys an int array pair
+void destroyIntArrPair(struct intArrPair pair) {
+    free(pair.first);
+    free(pair.second);
+}
 
 // A structure to represent a
 // node in adjacency list
@@ -67,6 +88,20 @@ struct Graph* createGraph(int V) {
  
     return graph;
 }
+
+// A utility function that destoys a graph of V vertices
+void destroyGraph(struct Graph* graph) {
+    for (int i = 0; i < graph->V; ++i) {
+        struct AdjListNode* node = graph->array[i].head;
+        while (node != NULL) {
+            struct AdjListNode* next = node->next;
+            free(node);
+            node = next;
+        }
+    }
+    free(graph->array);
+    free(graph);
+}
  
 // Adds an edge to an undirected graph
 void addEdge(struct Graph* graph, int src,
@@ -89,7 +124,7 @@ void addEdge(struct Graph* graph, int src,
 
 // !!! DIJKSTRA HERE !!!
 // simple djikstra implementation only using adjacency lists
-void dijkstra(struct Graph* graph, int src) {
+struct intArrPair dijkstra(struct Graph* graph, int src) {
     int V = graph->V; // # of vertices in graph
     // index = vertex
     int dist[V]; // dist values for each vertex
@@ -141,10 +176,17 @@ void dijkstra(struct Graph* graph, int src) {
             }
         }
     }
-    // return dist and prev
+    // print results
+    // for (int i = 0; i < V; i++) {
+    //     cout << "Vertex " << i << " has distance " << dist[i] << " and previous vertex " << prev[i] << endl;
+    // }
+    // save return values dist and prev
+    struct intArrPair ret = createIntArrPair(V);
     for (int i = 0; i < V; i++) {
-        cout << "Vertex " << i << " has distance " << dist[i] << " and previous vertex " << prev[i] << endl;
+        ret.first[i] = dist[i];
+        ret.second[i] = prev[i];
     }
+    return ret;
 
 }
 
@@ -167,7 +209,17 @@ int main(){
     addEdge(graph, 6, 8, 6);
     addEdge(graph, 7, 8, 7);
  
-    dijkstra(graph, 0);
- 
+    // allocate memory for results and run dijkstra
+    struct intArrPair res = dijkstra(graph, 0);
+
+    // print results
+    for (int i = 0; i < res.size; i++) {
+        cout << "Vertex " << i << " has distance " << res.first[i] << " and previous vertex " << res.second[i] << endl;
+    }
+    
+    // free memory
+    destroyIntArrPair(res);
+    destroyGraph(graph);
+
     return 0;
 }
