@@ -2,7 +2,7 @@
 // https://www.geeksforgeeks.org/dijkstras-algorithm-for-adjacency-list-representation-greedy-algo-8/
 // :3
 
- #include "graph_definition.hpp"
+#include "graph_definition.hpp"
 
 using namespace std;
 
