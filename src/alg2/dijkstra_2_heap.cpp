@@ -94,7 +94,7 @@ struct intArrPair dijkstra_heap(struct Graph* graph, int src ) {
        }
     }
     // print the calculated shortest distances
-    printArr(dist, V);
+    //printArr(dist, V);
 
     //Se hacen los arreglos para poder retornar el par.
     struct intArrPair ret = createIntArrPair(V);
@@ -106,29 +106,60 @@ struct intArrPair dijkstra_heap(struct Graph* graph, int src ) {
     return ret;
 }
 
-
-
 // --------- EN EL MAIN SE DESARROLLA EL TESTEO PARA ESTE ALGORITMO -------------
-
 int main(){
-    int V = 10;
-    int E=15;
-     int wtRange = 20;
-    struct Graph * graph;
-    graph = createGraph(V);
-    fillInGraphRandomly(graph, E, wtRange);
+    srand(time(NULL));
+    int iterations = 15;
+    int V = pow(2, 14);
+    int E;
+    int wtRange = 254;
     int src = 0;
-    // timer starting
-    auto start = chrono::steady_clock::now();
-    // dijkstra running
-    struct intArrPair res = dijkstra_heap(graph, src);
-    // timer stopping
-    auto end = chrono::steady_clock::now();
- 
+    struct Graph * graph;
+    cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
+    cout << "With 15 iterations per amount of edges (taking the adverage for each):" << endl;
+    // NOTE: 50 iterations was just way too much. Each algorithm took HORS to complete.
+    cout << endl;
 
-    destroyGraph(graph);
-    destroyIntArrPair(res);
-    cout << ".";
+    for(int i = 16; i <= 24; i++){
+        E = pow(2, i);
+        cout << "for E = 2^" << i << " = " << E;
+        double avg = 0;
+        double std = 0;
+        double totals[iterations];
+        for(int j = 0; j < iterations; j++){
+            // graph making
+            graph = createGraph(V);
+            // graph filling
+            fillInGraphRandomly(graph, E, wtRange);
+            // timer starting
+            auto start = chrono::steady_clock::now();
+            // dijkstra running
+            struct intArrPair res = dijkstra_heap(graph, src);
+            // timer stopping
+            auto end = chrono::steady_clock::now();
+            // timer results getting
+            double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
+            // results summing
+            avg += total;
+            totals[j] = total;
+            // graph and results freeing
+            destroyGraph(graph);
+            destroyIntArrPair(res);
+            cout << ".";
+        }
+        cout << endl;
+        // average taking
+        avg /= iterations;
+        // standard deviation taking
+        for(int j = 0; j < iterations; j++){
+            std += pow(totals[j] - avg, 2);
+        }
+        std /= iterations;
+        std = sqrt(std);
+        // average printing
+        cout << "Average time taken: " << avg << " +- " << std << " microseconds" << endl;
+        cout << endl;
+    }
 
     return 0;
 }
