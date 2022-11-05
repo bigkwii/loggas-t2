@@ -256,6 +256,8 @@ int main(){
         E = pow(2, i);
         cout << "for E = 2^" << i << " = " << E;
         double avg = 0;
+        double std = 0;
+        double totals[iterations];
         for(int j = 0; j < iterations; j++){
             // graph making
             graph = createGraph(V);
@@ -271,6 +273,7 @@ int main(){
             double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
             // results summing
             avg += total;
+            totals[j] = total;
             // graph and results freeing
             destroyGraph(graph);
             destroyIntArrPair(res);
@@ -279,8 +282,14 @@ int main(){
         cout << endl;
         // average taking
         avg /= iterations;
+        // standard deviation taking
+        for(int j = 0; j < iterations; j++){
+            std += pow(totals[j] - avg, 2);
+        }
+        std /= iterations;
+        std = sqrt(std);
         // average printing
-        cout << "Average time taken: " << avg << " microseconds" << endl;
+        cout << "Average time taken: " << avg << " +- " << std << " microseconds" << endl;
         cout << endl;
     }
 
