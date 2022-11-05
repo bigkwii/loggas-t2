@@ -69,5 +69,7 @@ struct intArrPair dijkstra(struct Graph* graph, int src, int V) {
         // lo añadimos al arreglo de previos
         prev[min->v] = min->v;
 
+        //Actualizamos la distancia mínima a cada vecino de v que lo requiera,
+        
 
 }
