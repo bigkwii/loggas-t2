@@ -92,14 +92,7 @@ struct Graph* createGraph(int V) {
 
 // A utility function that destoys a graph of V vertices
 void destroyGraph(struct Graph* graph) {
-    for (int i = 0; i < graph->V; ++i) {
-        struct AdjListNode* node = graph->array[i].head;
-        while (node != NULL) {
-            struct AdjListNode* next = node->next;
-            free(node);
-            node = next;
-        }
-    }
+    // free the memory allocated by createGraph
     free(graph->array);
     free(graph);
 }
@@ -202,8 +195,11 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
     // the weights will still be random. Note that no edge has a weight of 0.
     // we will use a 2D array to keep track of which edges have been added.
     // 1 = edge exists, 0 = edge does not exist
-    int edges[V][V];
+
+    // so we do that. allocate the memory and fill in with zeros
+    int ** edges = (int **)malloc(V * sizeof(int *));
     for (int i = 0; i < V; i++) {
+        edges[i] = (int *)malloc(V * sizeof(int));
         for (int j = 0; j < V; j++) {
             edges[i][j] = 0;
         }
@@ -214,29 +210,45 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
         while (edgesAdded < EperV) {
             int dest = rand() % V;
             if (edges[i][dest] == 0 && i != dest) {
-                int weight = rand() % wtRange + 1;
+                int weight = rand() % wtRange + 1; // all edges have a wt > 0
                 addEdge(graph, i, dest, weight);
                 edges[i][dest] = 1;
                 edgesAdded++;
             }
         }
     }
+    // free edges
+    for (int i = 0; i < V; i++) {
+        free(edges[i]);
+    }
+    free(edges);
 }
 
 int main(){
     srand(time(NULL));
-    int V = pow(2, 6);
-    int E = pow(2, 7);
-    int wtRange = 100;
+    int V = pow(2, 14);
+    int E = pow(2, 24);
+    int wtRange = 254;
+
+    cout << "Generating graph with " << V << " vertices..." << endl;
     struct Graph* graph = createGraph(V);
+
+    cout << "Filling in graph with " << E << " edges..." << endl;
     fillInGraphRandomly(graph, E, wtRange);
+
+    cout << "Running Dijkstra..." << endl;
     struct intArrPair res = dijkstra(graph, 0);
+
     // print results
-    for (int i = 0; i < V; i++) {
-        cout << "Vertex " << i << " has distance " << res.first[i] << " and previous vertex " << res.second[i] << endl;
-    }
+    // for (int i = 0; i < V; i++) {
+    //     cout << "V: " << i << " , dist[v]: " << res.first[i] << " , prev[v]: " << res.second[i] << endl;
+    // }
+    
+    cout << "Done. Freeing memory..." << endl;
     destroyGraph(graph);
     destroyIntArrPair(res);
+
+    cout << "That was for V = " << V << ", E = " << E << endl;
 
     return 0;
 }
