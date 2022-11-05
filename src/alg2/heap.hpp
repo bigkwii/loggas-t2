@@ -2,18 +2,18 @@
 #include <stdlib.h>
 #include <limits.h>
 
-//En este archivo se hace una estructura para los heap que se usará en el 
-//algoritmo de Dijsktra
+ #include "graph_definition.hpp"
+ 
+//---------ACÁ SE CREA EL HEAP O COLA DE PRIORIDAD----------
 
 
-// Estructura para un elemento del heap. En este caso, los elementos del 
-// heap son nodos/vértices.
+// Cada elemento del heap es un Heap_nodo
 struct Heap_nodo {
     int  v;     // índice del vértice.
-    int dist;   // Distancia 
+    int dist;   // Distancia = prioridad.
 };
  
-// Se define la estructura para la cola de prioridad, siendo un heap.
+//Se define el Heap:
 struct Heap_ {
     // Cantidad de Heap_nodos que contiene
     int size;    
@@ -167,3 +167,4 @@ void printArr(int dist[], int n) {
         printf("%d \t\t %d\n", i, dist[i]);
 }
  
+
