@@ -262,15 +262,16 @@ int main(){
             // timer starting
             auto start = chrono::steady_clock::now();
             // dijkstra running
-            dijkstra(graph, src);
+            struct intArrPair res = dijkstra(graph, src);
             // timer stopping
             auto end = chrono::steady_clock::now();
             // timer results getting
             double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
             // results summing
             avg += total;
-            // graph freeing
+            // graph and results freeing
             destroyGraph(graph);
+            destroyIntArrPair(res);
             cout << ".";
         }
         cout << endl;
