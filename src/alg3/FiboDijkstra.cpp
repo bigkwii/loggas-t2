@@ -72,7 +72,7 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
 			pCrawl = pCrawl->next;
 		}
 	}
-	printArr(dist,V);
+	//printArr(dist,V);
 
     //Se hacen los arreglos para poder retornar el par.
     struct intArrPair ret = createIntArrPair(V);
