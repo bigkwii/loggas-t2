@@ -24,7 +24,7 @@ Escrito y debuggeado con VScode, en Windows 10 con el devkit w64devkit, y compil
 
 CPU: Intel Core i7-7700HQ @ 2.80GHz
 
-### Referencias y fuentes (de inspiración uwu)
+## Referencias y fuentes (de inspiración uwu)
 
 - [Wikipedia - Dijkstra](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
 - [Himanshu Bhandoh - Lectura sobre costos amortizados y runtime de Dijkstra](https://web.stanford.edu/class/archive/cs/cs161/cs161.1166/lectures/lecture12.pdf)
