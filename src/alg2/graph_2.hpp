@@ -28,6 +28,7 @@ struct Adj_List {
 struct Graph {
     int V;
     struct Adj_List* array;
+    int ** edgeLookUp; // lookup matrix to see which edges have been added quickly
 };
 
 
@@ -58,6 +59,15 @@ struct Graph* createGraph(int V) {
     for (int i = 0; i < V; ++i) {
         graph->array[i].head = NULL;
     }
+    // Create an edge lookup matrix and fill with zeros
+    graph->edgeLookUp = (int**)malloc(V * sizeof(int*));
+    for (int i = 0; i < V; i++) {
+        graph->edgeLookUp[i] = (int*)malloc(V * sizeof(int));
+        for (int j = 0; j < V; j++) {
+            graph->edgeLookUp[i][j] = 0;
+        }
+    }
+
     return graph;
 }
 
@@ -73,6 +83,10 @@ void destroyGraph(struct Graph* graph) {
         }
     }
     // Liberamos la memoria.
+    // free lookup matrix
+    for (int i = 0; i < graph->V; i++) {
+        free(graph->edgeLookUp[i]);
+    }
     free(graph->array);
     free(graph);
 }
@@ -88,6 +102,10 @@ void addEdge(struct Graph* graph, int orig, int dest, int weight) {
     newNode = new_Adj_ListNode(orig, weight);
     newNode->next = graph->array[dest].head;
     graph->array[dest].head = newNode;
+
+    // add these edges to the lookup matrix
+    graph->edgeLookUp[orig][dest] = 1;
+    graph->edgeLookUp[dest][orig] = 1;
 }
 
 
@@ -106,31 +124,45 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
     // we will use a 2D array to keep track of which edges have been added.
     // 1 = edge exists, 0 = edge does not exist
 
-    // so we do that. allocate the memory and fill in with zeros
-    int ** edges = (int **)malloc(V * sizeof(int *));
-    for (int i = 0; i < V; i++) {
-        edges[i] = (int *)malloc(V * sizeof(int));
-        for (int j = 0; j < V; j++) {
-            edges[i][j] = 0;
-        }
-    }
-    // add edges
     for (int i = 0; i < V; i++) {
         int edgesAdded = 0;
         while (edgesAdded < EperV) {
             int dest = rand() % V;
-            if (edges[i][dest] == 0 && i != dest) {
-                int weight = rand() % wtRange + 1; // all edges have a wt > 0
+            int weight = rand() % wtRange + 1;
+            if (graph->edgeLookUp[i][dest] == 0 && i != dest) {
                 addEdge(graph, i, dest, weight);
-                edges[i][dest] = 1;
                 edgesAdded++;
             }
         }
     }
- 
-    // free edges
-    for (int i = 0; i < V; i++) {
-        free(edges[i]);
+}
+
+void addEdgesRandomly(struct Graph * graph, int E, int wtRange) {
+    // adds E edges to an existing graph, randomly.
+    // the weights will still be random. Note that no edge has a weight of 0.
+    if (E == 0) return;
+    int V = graph->V;
+    int edgesAdded = 0;
+    while (edgesAdded < E) {
+        int src = rand() % V;
+        int dest = rand() % V;
+        int weight = rand() % wtRange + 1;
+        if (graph->edgeLookUp[src][dest] == 0 && src != dest) {
+            addEdge(graph, src, dest, weight);
+            edgesAdded++;
+        }
     }
-    free(edges);
+}
+
+void shuffleEdgeWeights(struct Graph* graph) {
+    // this won't change the structure of the graph
+    // but it will assign all new random weights to all edges
+    int V = graph->V;
+    for (int i = 0; i < V; i++) {
+        struct Node_list* node = graph->array[i].head;
+        while (node != NULL) {
+            node->weight = rand() % 100 + 1;
+            node = node->next;
+        }
+    }
 }

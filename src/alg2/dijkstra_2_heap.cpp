@@ -109,28 +109,29 @@ struct intArrPair dijkstra_heap(struct Graph* graph, int src ) {
 // --------- EN EL MAIN SE DESARROLLA EL TESTEO PARA ESTE ALGORITMO -------------
 int main(){
     srand(time(NULL));
-    int iterations = 15;
+    int iterations = 50;
     int V = pow(2, 14);
     int E;
     int wtRange = 254;
     int src = 0;
     struct Graph * graph;
-    cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
-    cout << "With 15 iterations per amount of edges (taking the adverage for each):" << endl;
-    // NOTE: 50 iterations was just way too much. Each algorithm took HORS to complete.
+    cout << "Results for algorithm 2, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
+    cout << "With " << iterations << " iterations per amount of edges (taking the adverage for each):" << endl;
     cout << endl;
-
-    for(int i = 16; i <= 24; i++){
+    // graph making
+    graph = createGraph(V);
+    // graph filling
+    int i = 16;
+    fillInGraphRandomly(graph, pow(2,i-1), wtRange);
+    for(i; i <= 24; i++){
         E = pow(2, i);
         cout << "for E = 2^" << i << " = " << E;
         double avg = 0;
         double std = 0;
         double totals[iterations];
+        // edge adding
+        addEdgesRandomly(graph, E - pow(2,i-1), wtRange);
         for(int j = 0; j < iterations; j++){
-            // graph making
-            graph = createGraph(V);
-            // graph filling
-            fillInGraphRandomly(graph, E, wtRange);
             // timer starting
             auto start = chrono::steady_clock::now();
             // dijkstra running
@@ -142,9 +143,10 @@ int main(){
             // results summing
             avg += total;
             totals[j] = total;
-            // graph and results freeing
-            destroyGraph(graph);
+            // results freeing
             destroyIntArrPair(res);
+            // graph shuffling
+            shuffleEdgeWeights(graph); // instead of destroying and recreating the graph, or we'll be here for days
             cout << ".";
         }
         cout << endl;
@@ -159,7 +161,11 @@ int main(){
         // average printing
         cout << "Average time taken: " << avg << " +- " << std << " microseconds" << endl;
         cout << endl;
+        shuffleEdgeWeights(graph);
     }
+    cout << "That's it. That's the results. All that's left is to free the graph, but that can take a while. Feel free to hit ctrl+c." << endl;
+    // graph freeing
+    destroyGraph(graph);
 
     return 0;
 }
