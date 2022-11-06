@@ -76,9 +76,11 @@ struct intArrPair dijkstra_heap(struct Graph* graph, int src ) {
             int v = pCrawl->dest;
             //
             if (isInHeap(heap, v)) {
+
                 if (dist[u] != INT_MAX) {
                     if ( pCrawl->weight + dist[u] < dist[v]) {
                         dist[v] = dist[u] + pCrawl->weight; 
+                        prev[v] = u;
                         // Actualizamos dis en el heap usando decreaseKey.
                         decreaseKey(heap, v, dist[v]);
                     }
