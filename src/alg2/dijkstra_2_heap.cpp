@@ -1,11 +1,5 @@
  #include "heap.hpp"
 #include "graph_2.hpp"
-
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <cmath>
 #include <chrono>
 
 using namespace std;
@@ -126,6 +120,8 @@ int main(){
         double avg = 0;
         double std = 0;
         double totals[iterations];
+        struct Graph * graph_opti;
+        graph = createGraph(V);
         for(int j = 0; j < iterations; j++){
             // graph making
             graph = createGraph(V);
