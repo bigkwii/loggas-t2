@@ -150,11 +150,6 @@ bool isInHeap(struct Heap_ *heap, int v) {
 }
  
 
-// Printea la solucion
-void printArr(int dist[], int n) {
-    printf("Vertex   Distance from Source\n");
-    for (int i = 0; i < n; ++i)
-        printf("%d \t\t %d\n", i, dist[i]);
-}
+
  
 
