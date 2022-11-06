@@ -4,6 +4,7 @@
         "iostream": "cpp",
         "queue": "cpp",
         "chrono": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "cstdlib": "cpp"
     }
 }
