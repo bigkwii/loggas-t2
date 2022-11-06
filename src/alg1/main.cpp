@@ -56,6 +56,7 @@ struct AdjList {
 struct Graph {
     int V;
     struct AdjList* array;
+    int ** edgeLookUp; // lookup matrix to see which edges have been added quickly
 };
  
 // A utility function to create
@@ -93,6 +94,15 @@ struct Graph* createGraph(int V) {
     for (int i = 0; i < V; ++i)
         graph->array[i].head = NULL;
  
+    // Create an edge lookup matrix and fill with zeros
+    graph->edgeLookUp = (int**)malloc(V * sizeof(int*));
+    for (int i = 0; i < V; i++) {
+        graph->edgeLookUp[i] = (int*)malloc(V * sizeof(int));
+        for (int j = 0; j < V; j++) {
+            graph->edgeLookUp[i][j] = 0;
+        }
+    }
+
     return graph;
 }
 
@@ -108,6 +118,11 @@ void destroyGraph(struct Graph* graph) {
         }
     }
     // free the memory allocated by createGraph
+    // free lookup matrix
+    for (int i = 0; i < graph->V; i++) {
+        free(graph->edgeLookUp[i]);
+    }
+    free(graph->edgeLookUp);
     free(graph->array);
     free(graph);
 }
@@ -129,6 +144,10 @@ void addEdge(struct Graph* graph, int src,
     newNode = newAdjListNode(src, weight);
     newNode->next = graph->array[dest].head;
     graph->array[dest].head = newNode;
+
+    // add these edges to the lookup matrix
+    graph->edgeLookUp[src][dest] = 1;
+    graph->edgeLookUp[dest][src] = 1;
 }
 
 // !!! DIJKSTRA HERE !!!
@@ -208,35 +227,38 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
     // 3. every vertex has at least 2 edges
     // in fact, for simplicity, we will make sure that every vertex has exactly EperV edges.
     // the weights will still be random. Note that no edge has a weight of 0.
-    // we will use a 2D array to keep track of which edges have been added.
+    // we will use the lookup matrix of the graph to keep track of which edges have been added.
     // 1 = edge exists, 0 = edge does not exist
 
-    // so we do that. allocate the memory and fill in with zeros
-    int ** edges = (int **)malloc(V * sizeof(int *));
-    for (int i = 0; i < V; i++) {
-        edges[i] = (int *)malloc(V * sizeof(int));
-        for (int j = 0; j < V; j++) {
-            edges[i][j] = 0;
-        }
-    }
     // add edges
     for (int i = 0; i < V; i++) {
         int edgesAdded = 0;
         while (edgesAdded < EperV) {
             int dest = rand() % V;
-            if (edges[i][dest] == 0 && i != dest) {
-                int weight = rand() % wtRange + 1; // all edges have a wt > 0
+            int weight = rand() % wtRange + 1;
+            if (graph->edgeLookUp[i][dest] == 0 && i != dest) {
                 addEdge(graph, i, dest, weight);
-                edges[i][dest] = 1;
                 edgesAdded++;
             }
         }
     }
-    // free edges
-    for (int i = 0; i < V; i++) {
-        free(edges[i]);
+}
+
+void addEdgesRandomly(struct Graph * graph, int E, int wtRange) {
+    // adds E edges to an existing graph, randomly.
+    // the weights will still be random. Note that no edge has a weight of 0.
+    if (E == 0) return;
+    int V = graph->V;
+    int edgesAdded = 0;
+    while (edgesAdded < E) {
+        int src = rand() % V;
+        int dest = rand() % V;
+        int weight = rand() % wtRange + 1;
+        if (graph->edgeLookUp[src][dest] == 0 && src != dest) {
+            addEdge(graph, src, dest, weight);
+            edgesAdded++;
+        }
     }
-    free(edges);
 }
 
 void shuffleEdgeWeights(struct Graph* graph) {
@@ -264,17 +286,19 @@ int main(){
     cout << "Results for algorithm 1, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
     cout << "With " << iterations << " iterations per amount of edges (taking the adverage for each):" << endl;
     cout << endl;
-
-    for(int i = 16; i <= 24; i++){
+    // graph making
+    graph = createGraph(V);
+    // graph filling
+    int i = 16;
+    fillInGraphRandomly(graph, pow(2,i-1), wtRange);
+    for(i; i <= 24; i++){
         E = pow(2, i);
         cout << "for E = 2^" << i << " = " << E;
         double avg = 0;
         double std = 0;
         double totals[iterations];
-        // graph making
-        graph = createGraph(V);
-        // graph filling
-        fillInGraphRandomly(graph, E, wtRange);
+        // edge adding
+        addEdgesRandomly(graph, E - pow(2,i-1), wtRange);
         for(int j = 0; j < iterations; j++){
             // timer starting
             auto start = chrono::steady_clock::now();
@@ -294,8 +318,6 @@ int main(){
             cout << ".";
         }
         cout << endl;
-        // graph freeing
-        destroyGraph(graph);
         // average taking
         avg /= iterations;
         // standard deviation taking
@@ -307,7 +329,11 @@ int main(){
         // average printing
         cout << "Average time taken: " << avg << " +- " << std << " microseconds" << endl;
         cout << endl;
+        shuffleEdgeWeights(graph);
     }
+    cout << "That's it. That's the results. All that's left is to free the graph, but that can take a while. Feel free to hit ctrl+c." << endl;
+    // graph freeing
+    destroyGraph(graph);
 
     return 0;
 }
