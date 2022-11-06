@@ -30,6 +30,7 @@ struct node* mini = NULL;
 int no_of_nodes = 0;
 
 // Function to insert a node n with priority val in heap
+// Returns a pointer to the inserted node 
 struct node* insertion(int n , int val) {
 	struct node* new_node = new node();
 	new_node->key = val;
@@ -228,7 +229,7 @@ void Find(struct node* mini, int old_val, int val) {
 	node* temp5 = mini;
 	temp5->c = 'Y';
 	node* found_ptr = NULL;
-	if (temp5->key == old_val) {
+	if (temp5->n == old_val) {
 		found_ptr = temp5;
 		temp5->c = 'N';
 		found = found_ptr;

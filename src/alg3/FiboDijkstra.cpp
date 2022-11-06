@@ -61,7 +61,7 @@ void dijkstra(struct Graph* graph, int src){
 			if ( dist[u] != INT_MAX &&pCrawl->weight + dist[u] < dist[vertice]){
 				 dist[vertice] = dist[u] + pCrawl->weight;
 				 int priority = nodePointers[vertice]->key;
-				 Find(mini , priority , dist[vertice]);
+				 Find(mini , vertice , dist[vertice]);
 			}
 			pCrawl = pCrawl->next;
 		}
