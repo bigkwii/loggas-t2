@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <cmath>
-
+#include <chrono>
 
 
 
@@ -28,7 +28,6 @@ struct Adj_List {
 struct Graph {
     int V;
     struct Adj_List* array;
-    int ** edgeLookUp; // lookup matrix to see which edges have been added quickly
     int ** edgeLookUp; // lookup matrix to see which edges have been added quickly
 };
 
@@ -71,7 +70,6 @@ struct Graph* createGraph(int V) {
             graph->edgeLookUp[i][j] = 0;
         }
     }
-
     return graph;
 }
 
@@ -87,11 +85,12 @@ void destroyGraph(struct Graph* graph) {
             node = next;
         }
     }
-    // Liberamos la memoria.
+    // free the memory allocated by createGraph
     // free lookup matrix
     for (int i = 0; i < graph->V; i++) {
         free(graph->edgeLookUp[i]);
     }
+    free(graph->edgeLookUp);
     free(graph->array);
     free(graph);
 }
@@ -99,7 +98,7 @@ void destroyGraph(struct Graph* graph) {
 // Función para añadir un adge o arista al grafo no dirigido desde orig a dest.
 
 // Adds an edge to an undirected graph
-void addEdge(struct Graph* graph, int orig,
+void addEdge(struct Graph* graph, int src,
                    int dest, int weight) {
     // Add an edge from src to dest. 
     // A new node is added to the adjacency
@@ -107,18 +106,18 @@ void addEdge(struct Graph* graph, int orig,
     // added at the beginning
     struct Node_list* newNode =
             new_Adj_ListNode(dest, weight);
-    newNode->next = graph->array[orig].head;
-    graph->array[orig].head = newNode;
+    newNode->next = graph->array[src].head;
+    graph->array[src].head = newNode;
  
     // Since graph is undirected,
     // add an edge from dest to src also
-    newNode = new_Adj_ListNode(orig, weight);
+    newNode = new_Adj_ListNode(src, weight);
     newNode->next = graph->array[dest].head;
     graph->array[dest].head = newNode;
 
     // add these edges to the lookup matrix
-    graph->edgeLookUp[orig][dest] = 1;
-    graph->edgeLookUp[dest][orig] = 1;
+    graph->edgeLookUp[src][dest] = 1;
+    graph->edgeLookUp[dest][src] = 1;
 }
 
 
@@ -136,6 +135,7 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
     // we will use the lookup matrix of the graph to keep track of which edges have been added.
     // 1 = edge exists, 0 = edge does not exist
 
+    // add edges
     for (int i = 0; i < V; i++) {
         int edgesAdded = 0;
         while (edgesAdded < EperV) {
@@ -148,6 +148,9 @@ void fillInGraphRandomly(struct Graph* graph, int E, int wtRange) {
         }
     }
 }
+
+
+
 
 void addEdgesRandomly(struct Graph * graph, int E, int wtRange) {
     // adds E edges to an existing graph, randomly.
@@ -171,10 +174,11 @@ void shuffleEdgeWeights(struct Graph* graph) {
     // but it will assign all new random weights to all edges
     int V = graph->V;
     for (int i = 0; i < V; i++) {
-        struct Node_list* node = graph->array[i].head;
-        while (node != NULL) {
-            node->weight = rand() % 100 + 1;
-            node = node->next;
+        struct Node_list* pCrawl = graph->array[i].head;
+        while (pCrawl != NULL) {
+            int weight = rand() % 100 + 1; // all edges have a wt > 0
+            pCrawl->weight = weight;
+            pCrawl = pCrawl->next;
         }
     }
 }
