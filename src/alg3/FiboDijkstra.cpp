@@ -45,13 +45,12 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
     // dist values used to pick
     // minimum weight edge in cut
 	dist[src] = 0;
-	struct node *nodePointers[V];
     for (int v = 0; v < V; ++v){
 		if (v!=src){
 			dist[v] = INT_MAX;
             prev[v] = -1;
 		}
-    	nodePointers[v]=insertion(v , dist[v]);
+    	insertion(v , dist[v]);
     }
 	while (mini!=NULL){
 		int u = mini->n;
@@ -66,7 +65,6 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
             if ( dist[u] != INT_MAX &&pCrawl->weight + dist[u] < dist[vertice]){
 				 dist[vertice] = dist[u] + pCrawl->weight;
                  prev[vertice] = u;
-				 int priority = nodePointers[vertice]->key;
 				 Find(mini , vertice , dist[vertice]);
 			}
 			pCrawl = pCrawl->next;

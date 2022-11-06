@@ -31,7 +31,7 @@ int no_of_nodes = 0;
 
 // Function to insert a node n with priority val in heap
 // Returns a pointer to the inserted node 
-struct node* insertion(int n , int val) {
+void insertion(int n , int val) {
 	struct node* new_node = new node();
 	new_node->key = val;
 	new_node->n = n;
@@ -54,7 +54,6 @@ struct node* insertion(int n , int val) {
 		mini = new_node;
 	}
 	no_of_nodes++;
-	return new_node;
 }
 // Linking the heap nodes in parent child relationship
 void Fibonnaci_link(struct node* ptr2, struct node* ptr1) {
