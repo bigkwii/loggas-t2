@@ -36,30 +36,36 @@ void destroyIntArrPair(struct intArrPair pair) {
 
 
 //------------- ALGORITMO 3 ------------------
-void dijkstra(struct Graph* graph, int src){
+struct intArrPair dijkstra(struct Graph* graph, int src){
 	// Get the number of vertices in graph
-    int V = graph->V;
+    int V = graph->V; 
+    int dist[V];  
+    int prev[V]; 
    
     // dist values used to pick
     // minimum weight edge in cut
-    int dist[V];
 	dist[src] = 0;
 	struct node *nodePointers[V];
     for (int v = 0; v < V; ++v){
 		if (v!=src){
 			dist[v] = INT_MAX;
+            prev[v] = -1;
 		}
     	nodePointers[v]=insertion(v , dist[v]);
     }
 	while (mini!=NULL){
 		int u = mini->n;
 		Extract_min();
+        prev[u] = 1;
 		//vecinos de u
 		struct Node_list* pCrawl = graph->array[u].head;
-		while(pCrawl!=NULL){
+		
+        while(pCrawl!=NULL){
 			int vertice = pCrawl->dest;
-			if ( dist[u] != INT_MAX &&pCrawl->weight + dist[u] < dist[vertice]){
+			
+            if ( dist[u] != INT_MAX &&pCrawl->weight + dist[u] < dist[vertice]){
 				 dist[vertice] = dist[u] + pCrawl->weight;
+                 prev[vertice] = u;
 				 int priority = nodePointers[vertice]->key;
 				 Find(mini , vertice , dist[vertice]);
 			}
@@ -67,31 +73,81 @@ void dijkstra(struct Graph* graph, int src){
 		}
 	}
 	printArr(dist,V);
+
+    //Se hacen los arreglos para poder retornar el par.
+    struct intArrPair ret = createIntArrPair(V);
+    //Se recorren los vértices.
+    for (int i = 0; i < V; i++) {
+        ret.first[i] = dist[i];
+        ret.second[i] = prev[i];
+    }
+    return ret;
 }
 
 
 
-
-// Driver code
+// --------- EN EL MAIN SE DESARROLLA EL TESTEO PARA ESTE ALGORITMO -------------
 int main(){
+    srand(time(NULL));
+    int iterations = 50;
+    int V = pow(2, 14);
+    int E;
+    int wtRange = 254;
+    int src = 0;
+    struct Graph * graph;
+    cout << "Results for algorithm 3, with 2^14 = " << V << " vertices, and edges ranging from 2^16 to 2^24." << endl;
+    cout << "With " << iterations << " iterations per amount of edges (taking the adverage for each):" << endl;
+    cout << endl;
+    // graph making
+    graph = createGraph(V);
+    // graph filling
+    int i = 16;
+    fillInGraphRandomly(graph, pow(2,i-1), wtRange);
+    for(i; i <= 24; i++){
+        E = pow(2, i);
+        cout << "for E = 2^" << i << " = " << E;
+        double avg = 0;
+        double std = 0;
+        double totals[iterations];
+        // edge adding
+        addEdgesRandomly(graph, E - pow(2,i-1), wtRange);
+        struct Graph * graph_opti;
+        graph = createGraph(V);
+        for(int j = 0; j < iterations; j++){
+            // timer starting
+            auto start = chrono::steady_clock::now();
+            // dijkstra running
+            struct intArrPair res = dijkstra(graph, src);
+            // timer stopping
+            auto end = chrono::steady_clock::now();
+            // timer results getting
+            double total = chrono::duration_cast<chrono::microseconds>(end-start).count();
+            // results summing
+            avg += total;
+            totals[j] = total;
+            // results freeing
+            destroyIntArrPair(res);
+            // graph shuffling
+            shuffleEdgeWeights(graph); // instead of destroying and recreating the graph, or we'll be here for days
+            cout << ".";
+        }
+        cout << endl;
+        // average taking
+        avg /= iterations;
+        // standard deviation taking
+        for(int j = 0; j < iterations; j++){
+            std += pow(totals[j] - avg, 2);
+        }
+        std /= iterations;
+        std = sqrt(std);
+        // average printing
+        cout << "Average time taken: " << avg << " +- " << std << " microseconds" << endl;
+        cout << endl;
+        shuffleEdgeWeights(graph);
+    }
+    cout << "That's it. That's the results. All that's left is to free the graph, but that can take a while. Feel free to hit ctrl+c." << endl;
+    // graph freeing
+    destroyGraph(graph);
 
-    int V = 9;
-    struct Graph* graph = createGraph(V);
-    addEdge(graph, 0, 1, 4);
-    addEdge(graph, 0, 7, 8);
-    addEdge(graph, 1, 2, 8);
-    addEdge(graph, 1, 7, 11);
-    addEdge(graph, 2, 3, 7);
-    addEdge(graph, 2, 8, 2);
-    addEdge(graph, 2, 5, 4);
-    addEdge(graph, 3, 4, 9);
-    addEdge(graph, 3, 5, 14);
-    addEdge(graph, 4, 5, 10);
-    addEdge(graph, 5, 6, 2);
-    addEdge(graph, 6, 7, 1);
-    addEdge(graph, 6, 8, 6);
-    addEdge(graph, 7, 8, 7);
- 
-    dijkstra(graph, 0);
-	return 0;
+    return 0;
 }
