@@ -1,0 +1,32 @@
+/// ALG 2 ///
+Results for algorithm 2, with 2^14 = 16384 vertices, and edges ranging from 2^16 to 2^24.
+With 50 iterations per amount of edges (taking the adverage for each):
+
+for E = 2^16 = 65536..................................................
+Average time taken: 42310.2 +- 3196.15 microseconds
+
+for E = 2^17 = 131072..................................................
+Average time taken: 56497 +- 3187.74 microseconds
+
+for E = 2^18 = 262144..................................................
+Average time taken: 84809.9 +- 3198.45 microseconds
+
+for E = 2^19 = 524288..................................................
+Average time taken: 141401 +- 3894.67 microseconds
+
+for E = 2^20 = 1048576..................................................
+Average time taken: 259718 +- 7620.49 microseconds
+
+for E = 2^21 = 2097152..................................................
+Average time taken: 502708 +- 12725.9 microseconds
+
+for E = 2^22 = 4194304..................................................
+Average time taken: 1.02721e+06 +- 17620.5 microseconds
+
+for E = 2^23 = 8388608..................................................
+Average time taken: 2.31253e+06 +- 114630 microseconds
+
+for E = 2^24 = 16777216..................................................
+Average time taken: 5.06004e+06 +- 28792.4 microseconds
+
+That's it. That's the results. All that's left is to free the graph, but that can take a while. Feel free to hit ctrl+c.
