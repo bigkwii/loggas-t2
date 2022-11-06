@@ -119,13 +119,8 @@ struct Heap_nodo* extract_Min(struct Heap_*  heap) {
     return root;
 }
 
-//IMPORTANTE PARAFRASEAR
- // Función para disminuir el valor dist clave
-// de un vértice dado v. Esta función
-// usa pos[] del montón mínimo para obtener el
-// índice actual del nodo en el montón mínimo
-
-//Se disminuye el parámetro dist de un nodo dado.
+//Se disminuye el parámetro dist de un nodo dado dentro de un heap a una nueva distancia.
+//Usa pos[] del heap para conocer el índice actual del vértice en el heap.
 
 void decreaseKey(struct Heap_* heap, int v, int dist) {
     //Se obtiene la posición del nodo v en el heap
@@ -133,17 +128,14 @@ void decreaseKey(struct Heap_* heap, int v, int dist) {
  
     //Se obtiene el nodo y se actualiza su distancia.
     heap->array[i]->dist = dist;
- 
-    // Travel up while the complete
-    // tree is not heapified.
-    // This is a O(Logn) loop
 
+    //Mientras no se haya hecho heapify en todo el heap.
+    //Para el análisis, este while debería tomar tiempo O(Logn)
     while (i && (heap->array[i]->dist < heap->array[(i - 1) / 2]->dist)) {
-        // Swap this node with its parent
+        // Se intercambia el nodo con el de su padre.
         heap->pos[heap->array[i]->v] = (i-1)/2;
         heap->pos[heap->array[ (i-1)/2]->v] = i;
         swap_nodes(&heap->array[i],  &heap->array[(i - 1) / 2]);
- 
         // Nos movemos al nodo padre.
         i = (i - 1) / 2;
     }
