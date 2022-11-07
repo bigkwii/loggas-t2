@@ -41,6 +41,11 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
     int V = graph->V; 
     int dist[V];  
     int prev[V]; 
+
+    // we declara an array of pointers to the nodes in the heap so we can access each node
+    // in constant time 
+    struct node * nodePointers[V];
+
    
     // dist values used to pick
     // minimum weight edge in cut
@@ -50,7 +55,7 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
 			dist[v] = INT_MAX;
             prev[v] = -1;
 		}
-    	insertion(v , dist[v]);
+    	nodePointers[v]=insertion(v , dist[v]);
     }
 	while (mini!=NULL){
 		int u = mini->n;
@@ -65,7 +70,7 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
             if ( dist[u] != INT_MAX &&pCrawl->weight + dist[u] < dist[vertice]){
 				 dist[vertice] = dist[u] + pCrawl->weight;
                  prev[vertice] = u;
-				 Find(mini , vertice , dist[vertice]);
+				 Decrease_key(nodePointers[vertice] , dist[vertice]);
 			}
 			pCrawl = pCrawl->next;
 		}
@@ -81,10 +86,7 @@ struct intArrPair dijkstra(struct Graph* graph, int src){
     }
     return ret;
 }
-
-
-
-// --------- EN EL MAIN SE DESARROLLA EL TESTEO PARA ESTE ALGORITMO -------------
+//--------- EN EL MAIN SE DESARROLLA EL TESTEO PARA ESTE ALGORITMO -------------
 int main(){
     srand(time(NULL));
     int iterations = 50;

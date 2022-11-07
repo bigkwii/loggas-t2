@@ -19,7 +19,6 @@ struct node {
 	int n; //value of the node
 	int degree; // Degree of the node
 	char mark; // Black or white mark of the node
-	char c; // Flag for assisting in the Find node function
 };
 
 
@@ -31,13 +30,12 @@ int no_of_nodes = 0;
 
 // Function to insert a node n with priority val in heap
 // Returns a pointer to the inserted node 
-void insertion(int n , int val) {
+struct node* insertion(int n , int val) {
 	struct node* new_node = new node();
 	new_node->key = val;
 	new_node->n = n;
 	new_node->degree = 0;
 	new_node->mark = 'W';
-	new_node->c = 'N';
 	new_node->parent = NULL;
 	new_node->child = NULL;
 	new_node->left = new_node;
@@ -54,6 +52,7 @@ void insertion(int n , int val) {
 		mini = new_node;
 	}
 	no_of_nodes++;
+	return new_node;
 }
 // Linking the heap nodes in parent child relationship
 void Fibonnaci_link(struct node* ptr2, struct node* ptr1) {
@@ -220,66 +219,4 @@ void Decrease_key(struct node* found, int val) {
 	}
 	if (found->key < mini->key)
 		mini = found;
-}
-
-// Function to find the given node
-void Find(struct node* mini, int old_val, int val) {
-	struct node* found = NULL;
-	node* temp5 = mini;
-	temp5->c = 'Y';
-	node* found_ptr = NULL;
-	if (temp5->n == old_val) {
-		found_ptr = temp5;
-		temp5->c = 'N';
-		found = found_ptr;
-		Decrease_key(found, val);
-	}
-	if (found_ptr == NULL) {
-		if (temp5->child != NULL)
-			Find(temp5->child, old_val, val);
-		if ((temp5->right)->c != 'Y')
-			Find(temp5->right, old_val, val);
-	}
-	temp5->c = 'N';
-	found = found_ptr;
-}
-
-// Deleting a node from the heap
-void Deletion(int val) {
-	if (mini == NULL)
-		cout << "The heap is empty" << endl;
-	else {
-
-		// Decreasing the value of the node to 0
-		Find(mini, val, 0);
-
-		// Calling Extract_min function to
-		// delete minimum value node, which is 0
-		Extract_min();
-		cout << "Key Deleted" << endl;
-	}
-}
-
-// Function to display the heap
-void display() {
-	node* ptr = mini;
-	if (ptr == NULL)
-		cout << "The Heap is Empty" << endl;
-
-	else {
-		cout << "The root nodes of Heap are: " << endl;
-		do {
-			tuple<int,int> NodePrio;
-			NodePrio = make_tuple(ptr->n , ptr->key);
-			cout << "Nodo,Prioridad:";
-			cout << get<0>(NodePrio) << " " << get<1>(NodePrio);
-			ptr = ptr->right;
-			if (ptr != mini) {
-				cout << "-->";
-			}
-		} while (ptr != mini && ptr->right != NULL);
-		cout << endl
-			<< "The heap has " << no_of_nodes << " nodes" << endl
-			<< endl;
-	}
 }
